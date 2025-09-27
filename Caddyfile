@@ -1,0 +1,16 @@
+:80 {
+    redir https://{host}{uri}
+}
+
+:443 {
+    tls /etc/caddy/certs/server.crt /etc/caddy/certs/server.key
+	reverse_proxy {env.NEXTJS_URL}
+    log {
+        output file /var/log/caddy/access.log
+    }
+}
+
+:3443 {
+    tls /etc/caddy/certs/server.crt /etc/caddy/certs/server.key
+    respond "Hello from Caddy"
+}

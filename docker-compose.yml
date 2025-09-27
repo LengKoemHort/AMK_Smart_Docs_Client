@@ -1,0 +1,24 @@
+
+services:
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    env_file:
+      - ./.env
+    ports:
+      - "80:80"
+      - "443:443"
+      - "3443:3443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./certs:/etc/caddy/certs
+    restart: unless-stopped
+    command: ["caddy", "run", "--watch", "--config", "/etc/caddy/Caddyfile"]
+    extra_hosts:
+      - "host.docker.internal:${HOST_IP}"
+
+volumes:
+  caddy_data:
+  caddy_config:

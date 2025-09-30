@@ -244,7 +244,7 @@ export default function MessageCard({ message }: MessageCardProps) {
 
           <div className="flex flex-col max-w-full min-w-0">
             <div
-              className={`flex flex-col px-3 py-2 sm:px-4 sm:py-3 shadow-xs bg-base-100 text-base-content
+              className={`flex flex-col px-3 py-2 sm:px-4 sm:py-3 shadow-xs
                         ${
                           message.sender === "user"
                             ? "bg-primary text-white rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-none"
@@ -320,17 +320,22 @@ export default function MessageCard({ message }: MessageCardProps) {
                   </div>
                 </div>
               ) : (
-                <div className="text-base-content break-words text-sm sm:text-base leading-relaxed">
+                <div className="break-words text-sm sm:text-base leading-relaxed">
                   {message.isTyping ? (
                     <span className="italic text-gray-500 animate-pulse">
                       Bot is typing...
                     </span>
                   ) : (
-                  <div className="whitespace-pre-wrap font-sans">
-                    {message.content}
-                  </div>
+                    <div
+                      className={`whitespace-pre-wrap font-sans ${
+                        message.sender === "user" ? "text-white" : "text-black"
+                      }`}
+                    >
+                      {message.content}
+                    </div>
                   )}
                 </div>
+
               )}
 
               {message.sender === "user" && !message.isVoice && (
@@ -457,4 +462,5 @@ export default function MessageCard({ message }: MessageCardProps) {
     </>
   );
 }
+
 

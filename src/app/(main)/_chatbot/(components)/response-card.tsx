@@ -1,12 +1,15 @@
 "use client";
 import { ChatMessage } from "@/types/message-type";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import MessageActions from "./message-actions";
 import FullResponseBox from "./full-response-box";
 import PDFModal from "@/app/(main)/_document-management/(components)/pdf-modal";
-import { viewDocumentDownloadPrivilege } from "@/services/documents/document.service";
+import {
+  getDocumentDetail,
+  viewDocumentDownloadPrivilege,
+} from "@/services/documents/document.service";
 import { UserRole } from "@/types/user-type";
 import { useUser } from "@/context/UserContext";
 
@@ -27,9 +30,29 @@ function ResponseCard({
 
   const [copiedMessage, setCopiedMessage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // Removed unused 'selectedPdf' variable
   const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
   const [selectedDocumentId, setSelectedDocumentId] = useState("");
+  const [documentDisplayName, setDocumentDisplayName] = useState<string | null>(
+    null
+  );
+
+  useEffect(() => {
+    const fetchDocumentDetails = async () => {
+      if (msg.docId) {
+        try {
+          const document = await getDocumentDetail(msg.docId);
+          console.log("Document details:", document);
+          if (document) {
+            setDocumentDisplayName(document.name);
+          }
+        } catch (error) {
+          console.error("Failed to fetch document details:", error);
+        }
+      }
+    };
+
+    fetchDocumentDetails();
+  }, [msg.docId]);
 
   const handleCopyMessage = async (content: string, messageId: string) => {
     try {
@@ -46,7 +69,6 @@ function ResponseCard({
     fileName: string,
     documentId?: string
   ) => {
-    console.log("res-card: " + JSON.stringify(user));
     if (user && hasDownloadPrivilege) {
       if (documentId) {
         try {
@@ -55,7 +77,6 @@ function ResponseCard({
           console.error("Failed to access document:", error);
         }
       }
-      // Removed unused 'selectedPdf' variable assignment
     } else {
       if (documentId) {
         setSelectedDocumentId(documentId);
@@ -82,9 +103,16 @@ function ResponseCard({
   return (
     <>
       <div className="bg-base-100 flex flex-col h-fit text-base-content rounded-2xl px-4 py-3 shadow-sm hover:shadow-md transition-all duration-200">
-        <div className="text-primary font-semibold mb-2 flex-shrink-0">
-          Response #{idx + 1}
-        </div>
+        {documentDisplayName && (
+          <div className="text-primary font-semibold mb-2 flex-shrink-0">
+            {documentDisplayName}
+          </div>
+        )}
+        {!documentDisplayName && (
+          <div className="text-primary font-semibold mb-2 flex-shrink-0">
+            Response #{idx + 1}
+          </div>
+        )}
 
         <div className="text-sm sm:text-base leading-relaxed">
           {needsTruncation ? (
@@ -128,18 +156,7 @@ function ResponseCard({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs sm:text-sm md:text-xs lg:text-sm font-medium truncate hover:text-primary transition-colors">
-                {(() => {
-                  try {
-                    if (!msg.fileName) return "PDF Document";
-                    const newFileName = msg.fileName.replace(
-                      /_\d+(?=\.pdf$)/,
-                      ""
-                    );
-                    return newFileName || msg.fileName;
-                  } catch {
-                    return msg.fileName || "PDF Document";
-                  }
-                })()}
+                {documentDisplayName || msg.fileName || "PDF Document"}
               </p>
             </div>
           </div>

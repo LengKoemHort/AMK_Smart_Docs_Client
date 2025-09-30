@@ -10,6 +10,7 @@ export interface ChatMessage {
   docId?: string;
   fileUrl?: string;
   fileName?: string;
+  documentName?: string;
   fileType?: string;
   published_date?: string;
   hasReferences?: boolean;

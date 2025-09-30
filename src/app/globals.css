@@ -41,6 +41,7 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+
 :root {
   --primary: #a53c6f;
   --primary-foreground: #fcfcfc;
@@ -114,6 +115,7 @@
   --sidebar-ring: #8e8e8e;
 }
 
+
 /* Make daisyUI tooltips smaller and ensure they appear above all elements */
 .tooltip:before {
   font-size: 0.75rem !important;
@@ -138,7 +140,7 @@
 }
 
 body {
-  font-family: var(--font-body);
+  font-family: var(--font-kantumruy-pro), var(--font-poppins), sans-serif;
   padding: 0 !important;
   background-color: var(--base);
 }

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ChatMessage } from "@/types/message-type";
 import { X } from "lucide-react";
 import Image from "next/image";
@@ -7,7 +7,10 @@ import ReactMarkdown from "react-markdown";
 import MessageActions from "./message-actions";
 import PDFViewer from "@/components/PDFViewer/PDFViewer";
 import PDFModal from "@/app/(main)/_document-management/(components)/pdf-modal";
-import { viewDocumentDownloadPrivilege } from "@/services/documents/document.service";
+import {
+  getDocumentDetail,
+  viewDocumentDownloadPrivilege,
+} from "@/services/documents/document.service";
 import { useUser } from "@/context/UserContext";
 import { UserRole } from "@/types/user-type";
 
@@ -34,6 +37,27 @@ export default function FullResponseBox({
   } | null>(null);
   const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
   const [selectedDocumentId, setSelectedDocumentId] = useState("");
+  const [documentDisplayName, setDocumentDisplayName] = useState<string | null>(
+    null
+  );
+
+  useEffect(() => {
+    const fetchDocumentDetails = async () => {
+      if (msg.docId) {
+        try {
+          const document = await getDocumentDetail(msg.docId);
+          console.log("Document details from full-response-box:", document);
+          if (document) {
+            setDocumentDisplayName(document.name);
+          }
+        } catch (error) {
+          console.error("Failed to fetch document details:", error);
+        }
+      }
+    };
+
+    fetchDocumentDetails();
+  }, [msg.docId]);
 
   const handleViewPdf = async (
     url: string,
@@ -117,7 +141,7 @@ export default function FullResponseBox({
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm sm:text-base font-medium truncate mb-1 hover:text-primary transition-colors">
-                    {msg.fileName || "PDF Document"}
+                    {documentDisplayName || msg.fileName || "PDF Document"}
                   </p>
                   {/* Role-based indicator badge */}
                   <p className="text-xs text-base-content/60">

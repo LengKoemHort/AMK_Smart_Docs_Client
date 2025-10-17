@@ -16,12 +16,25 @@ interface ChatInputProps {
 interface DocumentType {
   key: string;
   label: string;
+  name?: string;
 }
 
+const DEFAULT_DOCUMENT_TYPES = [
+  { key: "contract", label: "@Contract" },
+  { key: "guideline", label: "@Guideline" },
+  { key: "report", label: "@Report" },
+  { key: "policy_document", label: "@Policy Document" },
+  { key: "procedure_manual", label: "@Procedure Manual" },
+  { key: "training_material", label: "@Training Material" },
+  { key: "invoice", label: "@Invoice" },
+  { key: "certificate", label: "@Certificate" },
+];
 export default function ChatInput({ onSendMessage }: ChatInputProps) {
   const [value, setValue] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [audioLevel, setAudioLevel] = useState(0);
+  const [isResponding, setIsResponding] = useState(false);
+
   const [duration, setDuration] = useState(0);
   const [showDocTypes, setShowDocTypes] = useState(false);
   const [selectedDocType, setSelectedDocType] = useState<string>("");
@@ -64,18 +77,8 @@ export default function ChatInput({ onSendMessage }: ChatInputProps) {
     } catch (error) {
       console.error("Error fetching document types:", error);
       // Fallback to default types if API fails
-      const defaultTypes = [
-        { key: "contract", label: "@Contract" },
-        { key: "guideline", label: "@Guideline" },
-        { key: "report", label: "@Report" },
-        { key: "policy_document", label: "@Policy Document" },
-        { key: "procedure_manual", label: "@Procedure Manual" },
-        { key: "training_material", label: "@Training Material" },
-        { key: "invoice", label: "@Invoice" },
-        { key: "certificate", label: "@Certificate" },
-      ];
-      setDocumentTypes(defaultTypes);
-      setFilteredDocTypes(defaultTypes);
+      setDocumentTypes(DEFAULT_DOCUMENT_TYPES);
+      setFilteredDocTypes(DEFAULT_DOCUMENT_TYPES);
     } finally {
       setIsLoadingDocTypes(false);
     }
@@ -281,14 +284,6 @@ export default function ChatInput({ onSendMessage }: ChatInputProps) {
       // Extract document type from message and get clean text
       const { cleanText, docType } = extractDocumentType(value);
 
-      console.log("=== ChatInput Debug ===");
-      console.log("Original value:", value);
-      console.log("Clean text:", cleanText);
-      console.log("Document type:", docType);
-      console.log("Selected doc type:", selectedDocType);
-      console.log("Document types available:", documentTypes);
-      console.log("======================");
-
       // Send the clean text (without @DocumentType) and document type separately
       onSendMessage(cleanText, undefined, undefined, docType || undefined);
       setValue("");
@@ -373,19 +368,25 @@ export default function ChatInput({ onSendMessage }: ChatInputProps) {
                 onKeyDown={handleKeyDown}
                 rows={1}
                 style={{ minHeight: 40 }}
+                disabled={isResponding}
               />
               <div className="flex flex-row justify-end items-center gap-2 relative">
-                <div
-                  className={`cursor-pointer hover:opacity-70 transition-all duration-300 ${
-                    value.trim() ? "translate-x-0" : "translate-x-10"
-                  }`}
-                  onClick={startRecording}
-                >
-                  <Mic className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600 hover:text-primary transition-colors duration-200" />
-                </div>
+                {isResponding ? (
+                  <Loader2 className="w-5 h-5 text-gray-600 animate-spin" />
+                ) : (
+                  <div
+                    className={`cursor-pointer hover:opacity-70 transition-all duration-300 ${
+                      value.trim() ? "translate-x-0" : "translate-x-10"
+                    }`}
+                    onClick={startRecording}
+                  >
+                    <Mic className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600 hover:text-primary transition-colors duration-200" />
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={handleSubmit}
+                  disabled={isResponding}
                   className={`rounded-full bg-primary p-2 transition-all duration-300 hover:bg-[#8B3159] hover:scale-105 ${
                     value.trim()
                       ? "opacity-100 translate-x-0 pointer-events-auto"
@@ -416,7 +417,7 @@ export default function ChatInput({ onSendMessage }: ChatInputProps) {
               <div
                 key={docType.key}
                 className="px-4 py-3 hover:bg-primary/10 cursor-pointer text-sm transition-colors duration-200 border-b border-primary/10 last:border-b-0 first:rounded-t-2xl last:rounded-b-2xl"
-                onClick={() => selectDocType(docType)}
+              onClick={() => selectDocType(docType)}
               >
                 <span className="font-medium text-primary">
                   {docType.label}
@@ -430,6 +431,11 @@ export default function ChatInput({ onSendMessage }: ChatInputProps) {
                 : "No document types found"}
             </div>
           )}
+        </div>
+      )}
+      {isResponding && (
+        <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/50 z-50">
+          <span className="text-white text-sm">Please wait for the chatbot to finish responding before asking another question.</span>
         </div>
       )}
     </div>

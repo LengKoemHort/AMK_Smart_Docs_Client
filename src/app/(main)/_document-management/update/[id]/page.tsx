@@ -286,7 +286,7 @@ export default function UploadDocumentPage() {
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium">
             <div className="flex gap-x-2">
-              <div>Issue Date</div>
+              <div>Effective Date</div>
               <div className="text-red-500">*</div>
             </div>
           </label>

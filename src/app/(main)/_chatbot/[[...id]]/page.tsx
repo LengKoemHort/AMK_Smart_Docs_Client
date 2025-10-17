@@ -9,7 +9,6 @@ import transformBackendMessage from "@/lib/chat-message-transform";
 import BotMultiMessageCard from "../(components)/bot-multi-message-card";
 import { useMutation } from "@tanstack/react-query";
 import { askBot, getChatSessionMessages } from "@/services/chats/chat.service";
-import { UUID } from "crypto";
 import { useChatContext } from "@/context/ChatContext";
 import { useUser } from "@/context/UserContext";
 
@@ -51,6 +50,8 @@ export default function Chatbot() {
     setIsChatStarted,
     currentSessionId,
     setCurrentSessionId,
+    isResponding,
+    setIsResponding,
   } = useChatContext();
 
   const { user: currentUser, hasDownloadPrivilege } = useUser();
@@ -59,11 +60,13 @@ export default function Chatbot() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const sidebarOpen = useSidebarState();
   const params = useParams();
-  const sessionId = params.id as UUID;
+  const sessionId = params.id;
 
   const sendMessageMutation = useMutation({
-    mutationFn: ({ text, formData }: { text: string; formData?: FormData }) =>
-      askBot(sessionId, text, formData),
+    mutationFn: ({ text, formData }: { text: string; formData?: FormData }) => {
+      const sessionIdString = Array.isArray(sessionId) ? sessionId[0] : sessionId;
+      return askBot(sessionIdString ?? null, text, formData);
+    },
     onSuccess: (data) => {
       const backendMessages = data.body;
       setMessages((prev: ChatMessage[]) => {
@@ -101,12 +104,12 @@ export default function Chatbot() {
         );
         setMessages(chatMessages);
         setIsChatStarted(chatMessages.length > 0);
-        setCurrentSessionId(params.id as UUID);
+        setCurrentSessionId(Array.isArray(params.id) ? params.id[0] : params.id);
       } catch (err) {
         console.error("Error loading session:", err);
         setMessages([]);
         setIsChatStarted(false);
-        setCurrentSessionId(params.id as UUID);
+        setCurrentSessionId(Array.isArray(params.id) ? params.id[0] : params.id);
       }
     };
     loadSession();
@@ -166,19 +169,10 @@ export default function Chatbot() {
       console.log("Added document_type to formData:", documentType);
     }
 
-    console.log("=== FormData contents ===");
-    for (const [key, value] of formData.entries()) {
-      if (value instanceof File) {
-        console.log(`${key}: File(${value.name}, ${value.size} bytes)`);
-      } else {
-        console.log(`${key}: ${value}`);
-      }
-    }
-    console.log("========================");
-
-    await sendMessageMutation.mutateAsync({ text, formData });
+    setIsResponding(true);
+    await sendMessageMutation.mutateAsync({ text, formData })
+      .finally(() => setIsResponding(false));
   };
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);

@@ -2,16 +2,17 @@
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import { ChatMessage } from "@/types/message-type";
-import { UUID } from "crypto";
+import { v4 as uuidv4 } from 'uuid';
 
 interface ChatContextType {
   messages: ChatMessage[];
   setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   isChatStarted: boolean;
   setIsChatStarted: React.Dispatch<React.SetStateAction<boolean>>;
-  currentSessionId: UUID | null;
-  setCurrentSessionId: React.Dispatch<React.SetStateAction<UUID | null>>;
-  clearChat: () => void;
+  currentSessionId: string | null;
+  setCurrentSessionId: React.Dispatch<React.SetStateAction<string | null>>;
+  isResponding: boolean;
+  setIsResponding: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -31,14 +32,8 @@ interface ChatProviderProps {
 export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isChatStarted, setIsChatStarted] = useState(false);
-  const [currentSessionId, setCurrentSessionId] = useState<UUID | null>(null);
-
-  const clearChat = () => {
-    setMessages([]);
-    setIsChatStarted(false);
-    setCurrentSessionId(null);
-  };
-
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [isResponding, setIsResponding] = useState(false);
   return (
     <ChatContext.Provider
       value={{
@@ -48,7 +43,8 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
         setIsChatStarted,
         currentSessionId,
         setCurrentSessionId,
-        clearChat,
+        isResponding,
+        setIsResponding,
       }}
     >
       {children}

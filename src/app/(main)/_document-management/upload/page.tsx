@@ -79,8 +79,13 @@ export default function UploadDocumentPage() {
     if (unit) formData.append("unit", unit);
     if (branch) formData.append("branch", branch);
     formData.append("department_id", selectedDepartmentId);
-    formData.append("type_id", selectedDocTypeId);
-    if (issueDate) formData.append("issueDate", issueDate.toISOString());
+    formData.append("document_type_id", selectedDocTypeId);
+    if (issueDate) {
+      formData.append("effective_date", issueDate.toISOString().split('T')[0]);
+      formData.append("expiry_date", issueDate.toISOString().split('T')[0]);
+      formData.append("published_date", issueDate.toISOString().split('T')[0]);
+    }
+    formData.append("status", "active");
 
     uploadMutation.mutate(formData);
   };
@@ -186,7 +191,7 @@ export default function UploadDocumentPage() {
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium">
             <div className="flex gap-x-2">
-              <div>Issue Date</div>
+              <div>Effective Date</div>
               <div className="text-red-500">*</div>
             </div>
           </label>

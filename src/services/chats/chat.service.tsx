@@ -40,7 +40,7 @@ export async function getChatSessionMessages(id: string) {
 }
 
 export async function askBot(
-  sessionId: UUID | null,
+  sessionId: string | null,
   message: string,
   voice_file?: FormData
 ) {

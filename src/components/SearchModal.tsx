@@ -9,13 +9,15 @@ import {
 } from "@/services/chats/chat.service";
 import { ChatSession } from "@/types/chat-session-type";
 
+interface SearchModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+ 
 export default function SearchModal({
   isOpen,
   onClose,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-}) {
+}: SearchModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<ChatSession[]>([]);
   const [recentSessions, setRecentSessions] = useState<ChatSession[]>([]);
@@ -76,7 +78,7 @@ export default function SearchModal({
       document.addEventListener("keydown", handleKeyDown);
       return () => document.removeEventListener("keydown", handleKeyDown);
     }
-  }, [isOpen, selectedIndex, searchQuery, searchResults, recentSessions]);
+  }, [isOpen, selectedIndex, searchQuery, searchResults.length, recentSessions.length]);
 
   const loadRecentSessions = async () => {
     try {
@@ -115,8 +117,7 @@ export default function SearchModal({
   const getSessionGroupLabel = (dateString: string): string => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffDays = Math.ceil(Math.abs(now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
 
     if (diffDays === 1) return "Today";
     if (diffDays <= 7) return "Last 7 Days";
